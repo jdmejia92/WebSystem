@@ -1,0 +1,6 @@
+CREATE TABLE "Pings" (
+	"IP"	INTEGER NOT NULL,
+	"Respond"	INTEGER NOT NULL,
+	"Ping_time"	INTEGER,
+	PRIMARY KEY("IP")
+);

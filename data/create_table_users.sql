@@ -1,0 +1,7 @@
+CREATE TABLE "Users" (
+	"User"	TEXT NOT NULL,
+	"Password"	INTEGER NOT NULL,
+	"IP"	INTEGER NOT NULL,
+	"Priority"	TEXT NOT NULL,
+	PRIMARY KEY("User")
+);
