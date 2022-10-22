@@ -1,7 +1,7 @@
 CREATE TABLE "Users" (
-	"User"	TEXT NOT NULL,
+	"id"	INTEGER NOT NULL,
+	"User"	TEXT NOT NULL UNIQUE,
 	"Password"	INTEGER NOT NULL,
-	"IP"	INTEGER NOT NULL,
 	"Priority"	TEXT NOT NULL,
-	PRIMARY KEY("User")
+	PRIMARY KEY("id")
 );

@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>WebSystem</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <title>WebSystem</title>
 </head>
 <body>
-    <div class="wrapper fadeInDown">
-        <div id="formContent">
-          <h1>Log in</h1>
-
-          <!-- Login Form -->
-          <form action="/api/v01/login" method="POST">
-            <!--input type="text" id="user" class="fadeIn second" name="user" placeholder="Usuario"-->
-            <div class="fadeIn second" id="email">
-                {{ formulario.users() }}
-            </div>
-            <div class="fadeIn third" id="password">
-                {{ formulario.password() }}
-            </div>
-            <!--input type="password" id="password" class="fadeIn third" name="password" placeholder="Contraseña"-->
-            <input type="submit" id="Log In" class="fadeIn fourth" value="Log In" name="Log In">
-          </form>
-      
-        </div>
-      </div>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <section class="wrapper fadeInDown">
+        <ul>
+            {% for message in messages %}
+                <li class="fadeIn second">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+  {% endwith%}
+  <div class="wrapper fadeInDown">
+    <div id="formContent">
+      <h1>Log in</h1>
+      <!-- Login Form -->
+      <form action="/api/v01/login" method="POST">
+        {{ formulario.users }}
+        {{ formulario.password }}
+        <!--input type="text" id="user" class="fadeIn second" name="user" placeholder="Usuario"-->
+        <!--input type="password" id="password" class="fadeIn third" name="password" placeholder="Contraseña"-->
+        <input type="submit" id="Log In" class="fadeIn fourth" value="Log In" name="Log In">
+      </form>
+  
+    </div>
+  </div>
 </body>
 </html>

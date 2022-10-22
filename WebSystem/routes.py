@@ -1,7 +1,7 @@
 #from flask_login import LoginManager
 from WebSystem.forms import UsersForm
 from WebSystem import app
-from flask import render_template, jsonify, request, url_for, redirect
+from flask import flash, render_template, jsonify, request, url_for, redirect
 #from WebSystem.models import DataProcess
 
 route_db = app.config['ROUTE_BBDD']
@@ -16,8 +16,11 @@ def login():
 
 @app.route("/api/v01/login", methods=["GET", "POST"])
 def machines():
+    form = UsersForm()
     if request.method == "POST":
-        return render_template("system.html")
-    else:
-        print(request.form)
-        return redirect(url_for("start"))
+        if form.validate:
+            
+            return render_template("system.html")
+        else:
+            flash("Usuario y/o contraseña incorrectos")
+            return redirect(url_for("start"))
