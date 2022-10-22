@@ -9,5 +9,17 @@
 </head>
 <body>
     <h1>Hello World!!!!!</h1>
+    <section class="login">
+        <h2>Autenticación</h2>
+        <form action="/api/v01/login" method="POST">
+            <Label for="User">Usuario:
+                <input type="text" id="User" name="User" placeholder="Usuario">
+            </Label><br>
+            <label for="Pasword">Contraseña: 
+                <input type="password" name="Password" id="Password" placeholder="******">
+            </label><br>
+            <input type="submit" value="aceptar" name="aceptar" id="aceptar">
+        </form>
+    </section>
 </body>
 </html>
