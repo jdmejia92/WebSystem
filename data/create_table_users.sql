@@ -4,4 +4,4 @@ CREATE TABLE "Users" (
 	"Password"	INTEGER NOT NULL,
 	"Priority"	TEXT NOT NULL,
 	PRIMARY KEY("id")
-);
+)
