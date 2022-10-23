@@ -1,36 +1,57 @@
 from WebSystem import app
-from flask_login import LoginManager
-from config import SECRET_KEY
-from flask import flash, render_template, jsonify, request, url_for, redirect
-from WebSystem.models import DataManager, User
-import random as rd
+from flask import jsonify, request, render_template
+from WebSystem.models import DataManager
+from pythonping import ping
 
 route_db = app.config['ROUTE_BBDD']
 data_manager = DataManager(route_db)
-app.config['SECRET_KEY'] = SECRET_KEY
-login_manager = LoginManager(app)
 
-@app.route("/")
-def start():
-    return render_template('index.html')
-
-@app.route("/api/v01/login/<user>/<password>", methods=['GET', 'POST'])
 def login(user, password):
-    global key
-    key = rd.randrange(0,100)
-    if request.method == 'GET':
-        pings = data_manager.consult_ping()
-        data = data_manager.user_information()
-        for users in data:
-            if users["User"] == user:
-                user_check = users
-        if user_check["User"] == user and str(user_check["Password"]) == password:
-            return redirect("http://localhost:5000/api/v01/system/{}/{}/{}".format(user, password, key)) 
-        else:
-            return "Correo o contraseña errado"
+    data = data_manager.user_information_admin()
+    for users in data:
+        if users["User"] == user:
+            user_check = users
+    if user_check["User"] == user and str(user_check["Password"]) == password:
+        return "Log in"
 
-@app.route("/api/v01/system/<user>/<password>/<int:key>", methods=['GET', 'POST', 'UPDATE'])
-def pings(user, password, key):
+@app.route("/api/v01/system/<user>/<password>", methods=['GET', 'POST', 'UPDATE'])
+def pings(user, password):
     if request.method == 'GET':
-        if key == key:
-            return render_template('index.html')
+        Login = False
+        log = login(user, password)
+        if log == "Log in":
+            Login = True
+        else:
+            Login = False
+
+        if Login == True:
+            machines = data_manager.machines()
+            return render_template("index.html")
+
+    elif request.method == 'POST':
+        Login = False
+        log = login(user, password)
+        if log == "Log in":
+            Login = True
+        else:
+            Login = False
+
+        if Login == True:
+            machines = []
+            data = data_manager.machines()
+            for ips in data:
+                item = ips["IP"]
+                machines.append(item)
+
+            respond_ping = []
+            for machine in machines:
+                pings = ping(machine, verbose=True)
+                respond_ping.append(pings.rtt_avg_ms)
+
+            pings_dict = {}
+            for key, values in zip(machines, respond_ping):
+                pings_dict[key] = values
+
+            
+            
+            return jsonify(pings_dict)            

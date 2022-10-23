@@ -1,5 +1,3 @@
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
 class DataManager():
@@ -43,25 +41,56 @@ class DataManager():
 
         return result
 
+    #Gestion de usuarios
     def user_information(self):
         return self.consulting("""SELECT User, Password FROM users ORDER BY id""")
 
+    def user_information_admin(self):
+        return self.consulting("""SELECT User, Password, Priority FROM users ORDER BY id""")
+
     def new_user(self, params):
-        return self.consulting("""INSERT INTO users (User, Password) values (?, ?)""", params)
+        return self.consulting("""INSERT INTO users (User, Password, Priority) values (?, ?, ?)""", params)
 
+    def delete_user(self, user):
+        return self.consulting("""DELETE FROM Users WHERE User = ?""", (user,))
+
+    def deleteUserByPriorityLevel(self, param):
+        return self.consulting("""DELETE FROM Users WHERE Priority = ?""", (param,))
+
+    def update_priority(self, param, user):
+        return self.consulting("""UPDATE Users SET Priority = ? WHERE User = ? """, (param, user))
+
+    #Gestion de maquinas
+    def machines(self):
+        return self.consulting("""SELECT id, IP FROM Machines ORDER BY id""")
+
+    def new_machine(self, param):
+        return self.consulting("""INSERT INTO Machines IP values ?""", (param,))
+
+    def new_pings(self, param):
+        return self.consulting("""INSERT INTO Machines """)
+    
     def consult_ping(self):
-        return self.consulting("""SELECT IP, Ping, Time_ping FROM pings ORDER BY IP""")
+        return self.consulting("""SELECT IP, Ping, Time_ping FROM Machines ORDER BY IP""")
 
-    
+    # Crear tablas
+    def create_table_users(self):
+        return self.consulting("""CREATE TABLE IF NOT EXIST Users (
+                                id	INTEGER NOT NULL,
+                                User	TEXT NOT NULL UNIQUE,
+                                Password	INTEGER NOT NULL,
+                                Priority	TEXT NOT NULL,
+                                PRIMARY KEY(id))""")
 
-class User(UserMixin):
-    def __init__(self, user, password, admin=False):
-        self.user = user
-        self.password = generate_password_hash(password)
-        self.admin = admin
+    def create_table_pings(self):
+        return self.consulting("""CREATE TABLE IF NOT EXIST "Pings" (
+                                "IP"	INTEGER NOT NULL UNIQUE,
+                                "Ping"	INTEGER NOT NULL,
+                                "Time_ping"	INTEGER)""")
 
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-    
-    def check_password(self, password):
-        return check_password_hash(self.password,password)
+    def create_table_secretKey(self):
+        return self.consulting("""CREATE TABLE IF NOT EXIST Secret_keys (
+                                id	INTEGER NOT NULL,
+                                Secret_key	INTEGER NOT NULL,
+                                PRIMARY KEY("id"))
+                                FOREIGN KEY(Secret_key) REFERENCES Users(User)""")
