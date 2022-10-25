@@ -1,3 +1,4 @@
+from unittest import result
 from WebSystem import app
 from flask import jsonify, request, render_template
 from WebSystem.models import DataManager
@@ -26,7 +27,11 @@ def pings(user, password):
 
         if Login == True:
             machines = data_manager.machines()
-            return render_template("index.html")
+            view_machines = jsonify(machines)
+            return render_template('index.html', machines=machines)
+            #return view_machines
+        else:
+            return "Usuario y/o contraseña invalido"
 
     elif request.method == 'POST':
         Login = False
@@ -38,20 +43,32 @@ def pings(user, password):
 
         if Login == True:
             machines = []
-            data = data_manager.machines()
+            data = data_manager.machines() 
             for ips in data:
                 item = ips["IP"]
                 machines.append(item)
 
-            respond_ping = []
+            list_pings = []
             for machine in machines:
                 pings = ping(machine, verbose=True)
-                respond_ping.append(pings.rtt_avg_ms)
+                list_pings.append(pings.rtt_avg_ms)
 
-            pings_dict = {}
-            for key, values in zip(machines, respond_ping):
-                pings_dict[key] = values
+            print(list_pings)
 
-            
-            
-            return jsonify(pings_dict)            
+            for ip in data:
+                for items in list_pings:
+                    print(items)
+                    ip["Ping"] = items
+
+            print(data)
+
+            """ results = []
+            for row in data:
+                respond = {}
+                for key, value in zip(row, respond_ping):
+                    key["Ping"] = value
+                results.append(respond) """
+
+            return data
+        else:
+            return "Usuario y/o contraseña invalido"            

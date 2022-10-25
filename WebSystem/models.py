@@ -94,3 +94,7 @@ class DataManager():
                                 Secret_key	INTEGER NOT NULL,
                                 PRIMARY KEY("id"))
                                 FOREIGN KEY(Secret_key) REFERENCES Users(User)""")
+
+class TestPing():
+    def __init__():
+        pass
