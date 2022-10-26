@@ -1,4 +1,24 @@
+from WebSystem import db, app
 import sqlite3
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+
+class Pings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    IP = db.Column(db.Integer, unique=True)
+    date = db.Column(db.String(10))
+    ping = db.Column(db.Integer)
+
+def create_table():
+    with app.app_context():
+        db.create_all()
+        user = User()
+        ping = Pings()
+        db.session.add(user, ping)
+        db.session.commit()
 
 class DataManager():
     def __init__(self, file=":memory:"):

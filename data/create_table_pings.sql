@@ -1,5 +1,0 @@
-CREATE TABLE "Pings" (
-	"IP"	INTEGER NOT NULL UNIQUE,
-	"Ping"	INTEGER NOT NULL,
-	"Time_ping"	INTEGER
-);
