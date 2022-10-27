@@ -27,19 +27,10 @@
                     </div>
                 </div>
             </nav>
-        </div>
-        <div class="hero-body">
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="notification is-danger">
-                        {{ messages[0] }}. Go to <a href="{{ url_for('login') }}">login page</a>.
-                    </div>
-                {% endif %}
-            {% endwith %}
             <div class="container has-text-centered">
-               {% block content %}
-               {% endblock %}
-            </div>
+                {% block content %}
+                {% endblock %}
+            </div>    
         </div>
     </section>
 </body>

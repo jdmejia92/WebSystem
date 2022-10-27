@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import EmailField, PasswordField, BooleanField
-from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms.validators import DataRequired
 
 class UserForm(FlaskForm):
-    email = EmailField('Correo electrónico', validators=[DataRequired(), Email(), EqualTo()])
-    password = PasswordField('Contraseña', validators=[DataRequired(), EqualTo()])
-    remember = BooleanField('Recuerdame')
+    email = EmailField('email', validators=[DataRequired("Debe ingresar un correo electrónico")])
+    password = PasswordField('password', validators=[DataRequired("Debe ingresar una contraseña")])
+    remember = BooleanField('remember')
