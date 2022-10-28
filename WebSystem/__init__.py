@@ -1,16 +1,16 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
-db = SQLAlchemy()
+from flask_admin import Admin
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object("config")
-db.init_app(app)
+db = SQLAlchemy(app)
+admin = Admin(app)
 
-login_manager = LoginManager()
-login_manager.login_view = 'app.system'
-login_manager.init_app(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'system'
+#login_manager.init_app()
 
 import WebSystem.routes
 from WebSystem.models import User, Pings

@@ -1,9 +1,9 @@
-from pyexpat.errors import messages
-from WebSystem import app, db
+from WebSystem import app, db, admin
 from .form import UserForm, SignupForm
 from .models import User
 from flask import jsonify, request, render_template, flash, url_for, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_admin.contrib.sqla import ModelView
 
 @app.route("/api/v01/login")
 def login():
@@ -17,10 +17,13 @@ def login_post():
         remember = True if form.remember.data else False
 
         user = User.query.filter_by(email=form.email.data).first()
+        print(user.priority)
 
         if not user or not check_password_hash(user.password, form.password.data):
             flash('Usuario y/o contraseña invalido')
             return redirect(url_for('login'))
+        elif user.priority == "Admin" and check_password_hash(user.password, form.password.data):
+            admin.add_view(ModelView(User, db.session))
 
         return redirect(url_for('system'))
     else:
