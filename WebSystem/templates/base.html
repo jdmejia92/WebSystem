@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSystem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <section class="hero is-primary is-fullheight">
@@ -14,19 +15,26 @@
                 <div class="container">
                     <div id="navbarMenuHeroA" class="navbar-menu">
                         <div class="navbar-end">
-                            <a href="login.html" class="navbar-item">
+                            <a href="{{ url_for('login') }}" class="navbar-item">
                                 Login
                             </a>
-                            <a href="login.html" class="navbar-item">
+                            <a href="{{ url_for('system') }}" class="navbar-item">
                                 System
                             </a>
-                            <a href="login.html" class="navbar-item">
+                            <a href="{{ url_for('login') }}" class="navbar-item">
                                 Logout
                             </a>
+                            {% if user == 2 %}
+                            <a href="{{ url_for('signup') }}" class="navbar-item">
+                                Signup
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </nav>
+        </div>
+        <div class="hero-body">
             <div class="container has-text-centered">
                 {% block content %}
                 {% endblock %}
