@@ -1,4 +1,4 @@
-from WebSystem import app, db, admin
+from src import app, db, admin
 from .form import UserForm, SignupForm
 from .models import User
 from flask import jsonify, request, render_template, flash, url_for, redirect

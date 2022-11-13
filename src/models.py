@@ -1,5 +1,4 @@
-from WebSystem import db
-from flask_login import UserMixin
+from src import db
 import sqlite3
 
 class User(UserMixin, db.Model):
