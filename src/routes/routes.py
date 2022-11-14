@@ -1,6 +1,6 @@
 from src import app, db, admin
 from .form import UserForm, SignupForm
-from .models import User
+from ..models import User
 from flask import jsonify, request, render_template, flash, url_for, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_admin.contrib.sqla import ModelView
