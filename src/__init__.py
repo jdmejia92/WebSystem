@@ -12,8 +12,10 @@ SQL_URI = "postgresql+psycopg2://{user}:{pw}@{url}/{db}".format(
 
 app = Flask(__name__, instance_relative_config=True)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQL_URI
-app.config["SECRET_KEY"] = "MYPASSWORD15/*-?!$%&"
+# app.config["SECRET_KEY"] = "MYPASSWORD15/*-?!$%&"
+app.config["WTF_CSRF_ENABLED"] = False
 db.init_app(app)
+
 
 # Blueprint para usuarios
 from src.routes.userRoutes import user as user_blueprint

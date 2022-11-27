@@ -1,10 +1,7 @@
 from src.form.form import UserForm
-from src.models.models import User, UserManager
-from sqlalchemy import exc
+from src.models.userModel import UserManager, auth
 from flask import jsonify, request, Blueprint, redirect, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
-from src import db
+
 
 user = Blueprint("users", __name__)
 
@@ -12,61 +9,22 @@ user = Blueprint("users", __name__)
 @user.route("/", methods=["POST"])
 def login():
     try:
-        email = request.json["email"]
-        password = request.json["password"]
-
-        user_email = (
-            User.query.filter_by(email=email)
-            .with_entities(User.email, User.password)
-            .scalar()
-        )
-        print(user_email)
-
-        if user_email:
-            return jsonify({"login": "success"})
-        return jsonify({"message": "email or password invalid"})
+        info = request.json
+        query = UserManager.login(email=info["email"], password=info["password"])
+        if query:
+            return jsonify(
+                {
+                    "user": query.email,
+                    "priority": query.priority,
+                }
+            )
+        return jsonify({"message": "User o password invalid"})
     except Exception as ex:
-        return jsonify({"message": str(ex)}), 500
+        return jsonify({"message": str(ex)})
 
 
-@user.route("/add", methods=["POST"])
-def signUp():
-    try:
-        form = UserForm()
-        email_request = request.json["email"]
-        print(email_request)
-        email = form.email.from_json(email_request)
-        password = form.password(request.json["password"])
-        priority = request.json["user"]
-
-        user_email = User.query.filter_by(email=email).first()
-        if email == user_email:
-            return jsonify({"message": "The user already exists"})
-
-        new_user = User(
-            id=uuid.uuid4(),
-            email=email,
-            password=generate_password_hash(password),
-            priority=priority,
-        )
-
-        try:
-            db.session.add(new_user)
-            db.session.commit()
-        except exc.IntegrityError:
-            return jsonify({"message": "User already exists"}), 400
-
-        added_user = User.query.filter_by(email=email).first()
-
-        if added_user.email == email:
-            return jsonify({"message": "New user added"})
-        return jsonify({"message": "No new user added"})
-
-    except Exception as ex:
-        return jsonify({"message": str(ex)}), 500
-
-
-@user.route("/users")
+@user.route("/users", methods=["GET"])
+@auth.login_required(role=1)
 def getUsers():
     try:
         users = UserManager.getUsers()
@@ -75,3 +33,43 @@ def getUsers():
         return jsonify({"message": "no users found"})
     except Exception as ex:
         return jsonify({"message": str(ex)})
+
+
+@user.route("/add", methods=["POST"])
+@auth.login_required(role=1)
+def signUp():
+    try:
+        form = UserForm.from_json(request.json, skip_unknown_keys=False)
+        if form.validate():
+            id = UserManager.addUser(
+                email=form.data["email"],
+                password=form.data["password"],
+                priority=form.data["priority"],
+            )
+            return id
+        return jsonify(form.errors), 400
+    except Exception as ex:
+        return jsonify({"message": str(ex)}), 500
+
+
+@user.route("/delete/<id>", methods=["DELETE"])
+@auth.login_required(role=1)
+def delete(id):
+    deleting = UserManager.deleteUser(id)
+    return deleting
+
+
+@user.route("/update/<id>", methods=["PUT"])
+@auth.login_required(role=1)
+def update(id):
+    form = UserForm.from_json(request.json, skip_unknown_keys=False)
+    if form.validate():
+        updating = UserManager.updateUser(
+            id,
+            email=form.data["email"],
+            password=form.data["password"],
+            priority=form.data["priority"],
+        )
+        return updating
+    else:
+        return jsonify({"message": str(form.errors)}), 400
