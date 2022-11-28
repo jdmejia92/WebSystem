@@ -43,6 +43,23 @@ class UserManager:
             return jsonify({"message": str(ex)}), 500
 
     @classmethod
+    def getUser(self, id):
+        try:
+            results = []
+            query = User.query.filter_by(id=id).scalar()
+            result = UserEditData(
+                id=query.id,
+                email=query.email,
+                password=query.password,
+                priority=query.priority,
+            )
+            result = result.all_to_JSON()
+            results.append(result)
+            return results
+        except Exception as ex:
+            return jsonify({"message": str(ex)}), 500
+
+    @classmethod
     def addUser(self, email=None, password=None, priority="user"):
         try:
             if User.query.filter_by(email=email).first():
@@ -114,7 +131,7 @@ class UserManager:
                 if check_password_hash(query.password, password):
                     return query
         except Exception as ex:
-            return jsonify ({"message": str(ex)})
+            return jsonify({"message": str(ex)})
 
 
 @auth.verify_password
@@ -123,6 +140,7 @@ def verify_password(email, password):
     if query:
         if check_password_hash(query.password, password):
             return query
+
 
 @auth.get_user_roles
 def get_user_roles(user):

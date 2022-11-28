@@ -4,6 +4,7 @@ from src import db, app
 def create_database():
     try:
         from src.models.userModel import User, Priority
+        from src.models.machineModel import Machines
 
         with app.app_context():
             db.create_all()

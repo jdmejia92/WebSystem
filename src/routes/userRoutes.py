@@ -12,12 +12,7 @@ def login():
         info = request.json
         query = UserManager.login(email=info["email"], password=info["password"])
         if query:
-            return jsonify(
-                {
-                    "user": query.email,
-                    "priority": query.priority,
-                }
-            )
+            return jsonify({"email": query.email, "password": info["password"]})
         return jsonify({"message": "User o password invalid"})
     except Exception as ex:
         return jsonify({"message": str(ex)})
@@ -30,6 +25,18 @@ def getUsers():
         users = UserManager.getUsers()
         if users:
             return jsonify(users)
+        return jsonify({"message": "no users found"})
+    except Exception as ex:
+        return jsonify({"message": str(ex)})
+
+
+@user.route("/user/<id>", methods=["GET"])
+@auth.login_required(role=1)
+def getUser(id):
+    try:
+        user = UserManager.getUser(id)
+        if user:
+            return jsonify(user)
         return jsonify({"message": "no users found"})
     except Exception as ex:
         return jsonify({"message": str(ex)})
