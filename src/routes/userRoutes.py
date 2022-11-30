@@ -22,7 +22,7 @@ def login():
 @auth.login_required(role=1)
 def getUsers():
     try:
-        users = UserManager.getUsers()
+        users = UserManager.getUsers(user=auth.current_user())
         if users:
             return jsonify(users)
         return jsonify({"message": "no users found"})
@@ -34,7 +34,7 @@ def getUsers():
 @auth.login_required(role=1)
 def getUser(id):
     try:
-        user = UserManager.getUser(id)
+        user = UserManager.getUser(id=id, user=auth.current_user())
         if user:
             return jsonify(user)
         return jsonify({"message": "no users found"})
@@ -49,9 +49,10 @@ def signUp():
         form = UserForm.from_json(request.json, skip_unknown_keys=False)
         if form.validate():
             id = UserManager.addUser(
+                user=auth.current_user(),
                 email=form.data["email"],
                 password=form.data["password"],
-                priority=form.data["priority"],
+                priority=form.data["priority"]
             )
             return id
         return jsonify(form.errors), 400
@@ -62,7 +63,7 @@ def signUp():
 @user.route("/delete/<id>", methods=["DELETE"])
 @auth.login_required(role=1)
 def delete(id):
-    deleting = UserManager.deleteUser(id)
+    deleting = UserManager.deleteUser(id, user=auth.current_user())
     return deleting
 
 
@@ -72,10 +73,11 @@ def update(id):
     form = UserForm.from_json(request.json, skip_unknown_keys=False)
     if form.validate():
         updating = UserManager.updateUser(
-            id,
+            id=id,
             email=form.data["email"],
             password=form.data["password"],
             priority=form.data["priority"],
+            user=auth.current_user()
         )
         return updating
     else:

@@ -1,4 +1,5 @@
 from src import db
+from sqlalchemy.sql import func
 from flask import jsonify
 from src.utils.Machine import MachineEditData
 import uuid
@@ -7,9 +8,14 @@ import uuid
 class Machines(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     machine = db.Column(db.String(15), unique=True, nullable=False)
-    created_by = db.Column(
-        db.String(36), db.ForeignKey("user.id"), nullable=False
-    )
+    created_by = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
+
+
+class Pings(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    ping = db.Column(db.Float(), nullable=False)
+    date = db.Column(db.DateTime(), nullable=False, server_default=func.now())
+    ping_from = db.Column(db.String(36), db.ForeignKey("machines.id"), nullable=False)
 
 
 class MachineManager:
