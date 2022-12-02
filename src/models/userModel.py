@@ -1,3 +1,4 @@
+from src.database.db import User
 from src.utils.Users import UserEditData
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,18 +9,6 @@ from src.models.executionModel import ExecutionManager
 
 
 auth = HTTPBasicAuth()
-
-
-class User(db.Model):
-    id = db.Column(db.String(36), primary_key=True)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-    priority = db.Column(db.Integer, db.ForeignKey("priority.id"), nullable=False)
-
-
-class Priority(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    priority = db.Column(db.String(20), nullable=False)
 
 
 class UserManager:
@@ -39,7 +28,7 @@ class UserManager:
                 results.append(result)
             consult = ExecutionManager.queryUsers(user=user, current_action=1)
             results.append(consult)
-            return results
+            return jsonify(results)
         except Exception as ex:
             return jsonify({"message": str(ex)}), 500
 
@@ -56,9 +45,11 @@ class UserManager:
             )
             result = result.all_to_JSON()
             results.append(result)
-            consult = ExecutionManager.queryUser(user=user, user_check=query.id, current_action=2)
+            consult = ExecutionManager.queryUser(
+                user=user, user_check=query.id, current_action=2
+            )
             results.append(consult)
-            return results
+            return jsonify(results)
         except Exception as ex:
             return jsonify({"message": str(ex)}), 500
 
@@ -92,7 +83,9 @@ class UserManager:
             if query:
                 db.session.delete(query)
                 db.session.commit()
-                consult = ExecutionManager.deleteUser(user=user, user_deleted=query.id, current_action=4)
+                consult = ExecutionManager.deleteUser(
+                    user=user, user_deleted=query.id, current_action=4
+                )
                 return jsonify({"id": query.id} | consult)
             return jsonify({"message": "No user deleted"}), 400
         except Exception as ex:
@@ -120,7 +113,9 @@ class UserManager:
                     )
                 )
                 if result == 1:
-                    consult = ExecutionManager.updateUser(user=user, user_updated=query.id, current_action=5)
+                    consult = ExecutionManager.updateUser(
+                        user=user, user_updated=query.id, current_action=5
+                    )
                     db.session.commit()
                     return jsonify({"id": query.id} | consult)
                 else:
@@ -146,11 +141,11 @@ class UserManager:
             id = uuid.uuid4()
             if query == []:
                 new_user = User(
-                id=id,
-                email="admin@system.com",
-                password=generate_password_hash("123456"),
-                priority=1,
-            )
+                    id=id,
+                    email="admin@system.com",
+                    password=generate_password_hash("123456"),
+                    priority=1,
+                )
                 db.session.add(new_user)
                 db.session.commit()
         except Exception as ex:

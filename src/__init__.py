@@ -27,6 +27,11 @@ from src.routes.systemRoutes import system as system_blueprint
 
 app.register_blueprint(system_blueprint, url_prefix="/api/v01/system")
 
+# Blueprint para las ejecuciones
+from src.routes.executionRoutes import execution as exec_blueprint
+
+app.register_blueprint(exec_blueprint, url_prefix="/api/v01/execution")
+
 # Crear tabla
 from src.database.db import create_database
 

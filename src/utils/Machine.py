@@ -1,3 +1,5 @@
+
+
 class MachineEditData:
     def __init__(self, id, machine, user_id):
         self.id = id

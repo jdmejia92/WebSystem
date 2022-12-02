@@ -13,9 +13,9 @@ def login():
         query = UserManager.login(email=info["email"], password=info["password"])
         if query:
             return jsonify({"email": query.email, "password": info["password"]})
-        return jsonify({"message": "User o password invalid"})
+        return jsonify({"message": "User o password invalid"}), 403
     except Exception as ex:
-        return jsonify({"message": str(ex)})
+        return jsonify({"message": str(ex)}), 500
 
 
 @user.route("/users", methods=["GET"])
@@ -24,10 +24,10 @@ def getUsers():
     try:
         users = UserManager.getUsers(user=auth.current_user())
         if users:
-            return jsonify(users)
-        return jsonify({"message": "no users found"})
+            return users
+        return jsonify({"message": "no users found"}), 400
     except Exception as ex:
-        return jsonify({"message": str(ex)})
+        return jsonify({"message": str(ex)}), 500
 
 
 @user.route("/user/<id>", methods=["GET"])
@@ -36,10 +36,10 @@ def getUser(id):
     try:
         user = UserManager.getUser(id=id, user=auth.current_user())
         if user:
-            return jsonify(user)
-        return jsonify({"message": "no users found"})
+            return user
+        return jsonify({"message": "no users found"}), 400
     except Exception as ex:
-        return jsonify({"message": str(ex)})
+        return jsonify({"message": str(ex)}), 500
 
 
 @user.route("/add", methods=["POST"])
@@ -63,22 +63,28 @@ def signUp():
 @user.route("/delete/<id>", methods=["DELETE"])
 @auth.login_required(role=1)
 def delete(id):
-    deleting = UserManager.deleteUser(id, user=auth.current_user())
-    return deleting
+    try:
+        deleting = UserManager.deleteUser(id, user=auth.current_user())
+        return deleting
+    except Exception as ex:
+        return jsonify({"message": str(ex)}), 500
 
 
 @user.route("/update/<id>", methods=["PUT"])
 @auth.login_required(role=1)
 def update(id):
-    form = UserForm.from_json(request.json, skip_unknown_keys=False)
-    if form.validate():
-        updating = UserManager.updateUser(
-            id=id,
-            email=form.data["email"],
-            password=form.data["password"],
-            priority=form.data["priority"],
-            user=auth.current_user()
-        )
-        return updating
-    else:
-        return jsonify({"message": str(form.errors)}), 400
+    try:
+        form = UserForm.from_json(request.json, skip_unknown_keys=False)
+        if form.validate():
+            updating = UserManager.updateUser(
+                id=id,
+                email=form.data["email"],
+                password=form.data["password"],
+                priority=form.data["priority"],
+                user=auth.current_user()
+            )
+            return updating
+        else:
+            return jsonify({"message": str(form.errors)}), 400
+    except Exception as ex:
+        return jsonify({"message": str(ex)}), 500

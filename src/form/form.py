@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 import wtforms_json
-from wtforms.validators import DataRequired, Length, ValidationError
+from wtforms.validators import DataRequired, Length, ValidationError, Regexp
 from wtforms.fields import EmailField, PasswordField, StringField
 
 wtforms_json.init()
@@ -27,3 +27,7 @@ class UserForm(FlaskForm):
         "priority",
         validators=[DataRequired(message="You must add a priority"), priorityCheck],
     )
+
+
+class MachineForm(FlaskForm):
+    machine = StringField("machine", validators=[DataRequired(message="You must add a machine"), Regexp("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", message="Debes añadir un IP correcto")])
