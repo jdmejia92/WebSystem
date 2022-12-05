@@ -1,6 +1,6 @@
 from flask import jsonify, request, Blueprint
 from src.form.form import MachineForm
-from src.models.userModel import auth
+from src.models.userModel import auth, UserManager
 from src.models.machineModel import MachineManager
 
 system = Blueprint("system", __name__)
@@ -11,7 +11,22 @@ system = Blueprint("system", __name__)
 def getMachines():
     try:
         machines = MachineManager.getMachines()
+        if machines == []:
+            return jsonify({"message": "No machines found"}), 400
         return machines
+    except Exception as ex:
+        return jsonify({"message": str(ex)}), 500
+
+
+@system.route("/<id>")
+@auth.login_required
+def getMachine(id):
+    try:
+        machine = MachineManager.getMachine(id)
+        if machine == []:
+            return jsonify({"message": "No machine found"}), 400
+        email = UserManager.getUserEmail(machine, model="system")
+        return email
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -23,9 +38,9 @@ def addMachine():
         form = MachineForm.from_json(request.json, skip_unknown_keys=False)
         if form.validate:
             add = MachineManager.addMachine(
-                machine=form.data["ipv4"], user_id=auth.current_user().id
+                machine=form.data["machine"], user_id=auth.current_user().id
             )
-            return add
+            return jsonify(add)
         return jsonify(form.errors), 400
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500

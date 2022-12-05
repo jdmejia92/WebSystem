@@ -14,7 +14,11 @@ def priorityCheck(form, field):
 
 class UserForm(FlaskForm):
     email = EmailField(
-        "email", validators=[DataRequired(message="You must add an email")]
+        "email",
+        validators=[
+            DataRequired(message="You must add an email"),
+            Regexp("^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$"),
+        ],
     )
     password = PasswordField(
         "password",
@@ -30,4 +34,12 @@ class UserForm(FlaskForm):
 
 
 class MachineForm(FlaskForm):
-    machine = StringField("machine", validators=[DataRequired(message="You must add a machine"), Regexp("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", message="Debes añadir un IP correcto")])
+    machine = StringField(
+        "machine",
+        validators=[
+            DataRequired(message="You must add a machine"),
+            Regexp(
+                "^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", message="Debes añadir un IP correcto"
+            ),
+        ],
+    )

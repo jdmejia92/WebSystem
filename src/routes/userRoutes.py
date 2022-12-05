@@ -1,5 +1,6 @@
 from src.form.form import UserForm
 from src.models.userModel import UserManager, auth
+from src.models.executionModel import ExecutionManager
 from flask import jsonify, request, Blueprint, redirect, url_for
 
 
@@ -22,9 +23,10 @@ def login():
 @auth.login_required(role=1)
 def getUsers():
     try:
-        users = UserManager.getUsers(user=auth.current_user())
+        users = UserManager.getUsers()
         if users:
-            return users
+            ExecutionManager.queryUsers(user=auth.current_user(), current_action=1)
+            return jsonify(users)
         return jsonify({"message": "no users found"}), 400
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
@@ -34,10 +36,11 @@ def getUsers():
 @auth.login_required(role=1)
 def getUser(id):
     try:
-        user = UserManager.getUser(id=id, user=auth.current_user())
+        user = UserManager.getUser(id)
         if user:
-            return user
-        return jsonify({"message": "no users found"}), 400
+            ExecutionManager.queryUser(user=auth.current_user(), user_check=id, current_action=2)
+            return jsonify(user)
+        return jsonify({"message": "no user found"}), 400
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -49,12 +52,14 @@ def signUp():
         form = UserForm.from_json(request.json, skip_unknown_keys=False)
         if form.validate():
             id = UserManager.addUser(
-                user=auth.current_user(),
                 email=form.data["email"],
                 password=form.data["password"],
                 priority=form.data["priority"]
             )
-            return id
+            if id == 400:
+                return jsonify({"message": "User already exists"})
+            ExecutionManager.addUser(user=auth.current_user(), user_add=id["id"], current_action=3)
+            return jsonify(id)
         return jsonify(form.errors), 400
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
@@ -65,6 +70,9 @@ def signUp():
 def delete(id):
     try:
         deleting = UserManager.deleteUser(id, user=auth.current_user())
+        if deleting == 400:
+            return jsonify({"message": "No user deleted"})
+        ExecutionManager.deleteUser(user=auth.current_user(), user_deleted=deleting["id"], current_action=4)
         return deleting
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
@@ -80,9 +88,13 @@ def update(id):
                 id=id,
                 email=form.data["email"],
                 password=form.data["password"],
-                priority=form.data["priority"],
-                user=auth.current_user()
+                priority=form.data["priority"]
             )
+            if updating == 400:
+                return jsonify({"message": "No user updated"})
+            elif updating == 401:
+                return jsonify({"message": "No user found"})
+            ExecutionManager.updateUser(user=auth.current_user(), user_updated=updating["id"], current_action=5)
             return updating
         else:
             return jsonify({"message": str(form.errors)}), 400

@@ -1,5 +1,5 @@
 from flask import jsonify, request, Blueprint
-from src.models.userModel import auth
+from src.models.userModel import auth, UserManager
 from src.models.executionModel import ExecutionManager
 
 execution = Blueprint("execution", __name__)
@@ -11,6 +11,7 @@ def getExecutions():
         result = ExecutionManager.getExecutions()
         if result == 400:
             return jsonify({"message": "No se encontraron acciones"}), 400
+        result = UserManager.getUserEmail(execution=result, model="execution")
         return jsonify(result)
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
@@ -22,6 +23,7 @@ def getExecution(id):
         result = ExecutionManager.getExecution(id)
         if result == 400:
             return jsonify({"message": "No se encontro la acción"}), 400
+        result = UserManager.getUserEmail(execution=result, model="execution")
         return jsonify(result)
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500

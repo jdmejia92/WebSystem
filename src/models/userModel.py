@@ -3,9 +3,7 @@ from src.utils.Users import UserEditData
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
-from flask import jsonify
 from src import db
-from src.models.executionModel import ExecutionManager
 
 
 auth = HTTPBasicAuth()
@@ -13,30 +11,26 @@ auth = HTTPBasicAuth()
 
 class UserManager:
     @classmethod
-    def getUsers(self, user):
-        try:
-            results = []
-            query = User.query.all()
-            for item in query:
-                result = UserEditData(
-                    id=item.id,
-                    email=item.email,
-                    password=item.password,
-                    priority=item.priority,
-                )
-                result = result.all_to_JSON()
-                results.append(result)
-            consult = ExecutionManager.queryUsers(user=user, current_action=1)
-            results.append(consult)
-            return jsonify(results)
-        except Exception as ex:
-            return jsonify({"message": str(ex)}), 500
+    def getUsers(self):
+        results = []
+        query = User.query.all()
+        for item in query:
+            result = UserEditData(
+                id=item.id,
+                email=item.email,
+                password=item.password,
+                priority=item.priority,
+            )
+            result = result.all_to_JSON()
+            results.append(result)
+        return results
+
 
     @classmethod
-    def getUser(self, id, user):
-        try:
-            results = []
-            query = User.query.filter_by(id=id).scalar()
+    def getUser(self, id):
+        results = []
+        query = User.query.filter_by(id=id).scalar()
+        if query:
             result = UserEditData(
                 id=query.id,
                 email=query.email,
@@ -45,19 +39,13 @@ class UserManager:
             )
             result = result.all_to_JSON()
             results.append(result)
-            consult = ExecutionManager.queryUser(
-                user=user, user_check=query.id, current_action=2
-            )
-            results.append(consult)
-            return jsonify(results)
-        except Exception as ex:
-            return jsonify({"message": str(ex)}), 500
+            return results
 
     @classmethod
-    def addUser(self, user, email=None, password=None, priority="user"):
-        try:
-            if User.query.filter_by(email=email).first():
-                return jsonify({"message": "User already exists"}), 400
+    def addUser(self, email=None, password=None, priority="user"):
+        if User.query.filter_by(email=email).first():
+            return 400
+        else:
             id = uuid.uuid4()
             if priority == "admin":
                 priority = 1
@@ -71,85 +59,81 @@ class UserManager:
             )
             db.session.add(new_user)
             db.session.commit()
-            consult = ExecutionManager.addUser(user=user, user_add=id, current_action=3)
-            return jsonify({"id": id} | consult)
-        except Exception as ex:
-            return jsonify({"message": ex}), 500
+            return {"id": id}
 
     @classmethod
     def deleteUser(self, id, user):
-        try:
-            query = User.query.filter_by(id=id).scalar()
-            if query:
-                db.session.delete(query)
-                db.session.commit()
-                consult = ExecutionManager.deleteUser(
-                    user=user, user_deleted=query.id, current_action=4
-                )
-                return jsonify({"id": query.id} | consult)
-            return jsonify({"message": "No user deleted"}), 400
-        except Exception as ex:
-            return jsonify({"message": str(ex)}), 500
+        query = User.query.filter_by(id=id).scalar()
+        if query:
+            db.session.delete(query)
+            db.session.commit()
+            return {"id": query.id}
+        return 400
 
     @classmethod
-    def updateUser(self, user, id, email, password, priority):
-        try:
-            query = User.query.filter_by(id=id).scalar()
-            if query:
-                if priority == "admin":
-                    priority = str(1)
-                else:
-                    priority = str(2)
-                result = (
-                    db.session.query(User)
-                    .filter(User.id == id)
-                    .update(
-                        {
-                            "email": email,
-                            "password": generate_password_hash(password),
-                            "priority": priority,
-                        },
-                        synchronize_session="fetch",
-                    )
+    def updateUser(self, id, email, password, priority):
+        query = User.query.filter_by(id=id).scalar()
+        if query:
+            if priority == "admin":
+                priority = str(1)
+            else:
+                priority = str(2)
+            result = (
+                db.session.query(User)
+                .filter(User.id == id)
+                .update(
+                    {
+                        "email": email,
+                        "password": generate_password_hash(password),
+                        "priority": priority,
+                    },
+                    synchronize_session="fetch",
                 )
-                if result == 1:
-                    consult = ExecutionManager.updateUser(
-                        user=user, user_updated=query.id, current_action=5
-                    )
-                    db.session.commit()
-                    return jsonify({"id": query.id} | consult)
-                else:
-                    return jsonify({"message": "No user updated"}), 400
-            return jsonify({"message": "No user found to update"}), 400
-        except Exception as ex:
-            return jsonify({"message": str(ex)}), 500
+            )
+            if result == 1:
+                db.session.commit()
+                return {"id": query.id}
+            else:
+                return 400
+        return 401
 
     @classmethod
     def login(self, email, password):
-        try:
-            query = User.query.filter_by(email=email).scalar()
-            if query:
-                if check_password_hash(query.password, password):
-                    return query
-        except Exception as ex:
-            return jsonify({"message": str(ex)})
+        query = User.query.filter_by(email=email).scalar()
+        if query:
+            if check_password_hash(query.password, password):
+                return query
+
 
     @classmethod
     def firstUser(self):
-        try:
-            query = User.query.all()
-            id = uuid.uuid4()
-            if query == []:
-                new_user = User(
-                    id=id,
-                    email="admin@system.com",
-                    password=generate_password_hash("123456"),
-                    priority=1,
-                )
-                db.session.add(new_user)
-                db.session.commit()
-        except Exception as ex:
-            print(str(ex))
+        query = User.query.all()
+        id = uuid.uuid4()
+        if query == []:
+            new_user = User(
+                id=id,
+                email="admin@system.com",
+                password=generate_password_hash("123456"),
+                priority=1,
+            )
+            db.session.add(new_user)
+            db.session.commit()
+
+    @classmethod
+    def getUserEmail(self, execution, model):
+        if model == "execution":
+            for item in execution:
+                id = item["user"]
+                query = User.query.filter_by(id=id).scalar()
+                result = {"user": str(query.email)}
+                item.update(result)
+        elif model == "system":
+            for item in execution:
+                id = item["created_by"]
+                query = User.query.filter_by(id=id).scalar()
+                result = {"created_by": str(query.email)}
+                item.update(result)
+        return execution
 
 
 @auth.verify_password
