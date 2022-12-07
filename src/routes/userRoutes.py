@@ -1,7 +1,7 @@
 from src.form.form import UserForm
 from src.models.userModel import UserManager, auth
 from src.models.executionModel import ExecutionManager
-from flask import jsonify, request, Blueprint, redirect, url_for
+from flask import jsonify, request, Blueprint
 
 
 user = Blueprint("users", __name__)
@@ -24,10 +24,10 @@ def login():
 def getUsers():
     try:
         users = UserManager.getUsers()
-        if users:
-            ExecutionManager.queryUsers(user=auth.current_user(), current_action=1)
-            return jsonify(users)
-        return jsonify({"message": "no users found"}), 400
+        if users[1] == 400:
+            return jsonify(users[0]), 400
+        email = UserManager.getUserEmail(execution=users[0], model="user")
+        return jsonify(email)
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -37,10 +37,10 @@ def getUsers():
 def getUser(id):
     try:
         user = UserManager.getUser(id)
-        if user:
-            ExecutionManager.queryUser(user=auth.current_user(), user_check=id, current_action=2)
-            return jsonify(user)
-        return jsonify({"message": "no user found"}), 400
+        if user[1] == 400:
+            return jsonify(user[0])
+        email = UserManager.getUserEmail(execution=user[0], model="user")
+        return jsonify(email)
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -54,12 +54,15 @@ def signUp():
             id = UserManager.addUser(
                 email=form.data["email"],
                 password=form.data["password"],
-                priority=form.data["priority"]
+                priority=form.data["priority"],
+                created_by=auth.current_user()
             )
-            if id == 400:
-                return jsonify({"message": "User already exists"})
-            ExecutionManager.addUser(user=auth.current_user(), user_add=id["id"], current_action=3)
-            return jsonify(id)
+            if id[1] == 400:
+                return jsonify(id[0]), 400
+            ExecutionManager.queryUser(
+                user=auth.current_user(), user_checked=id[0]["id"], current_action=1
+            )
+            return jsonify(id[0])
         return jsonify(form.errors), 400
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
@@ -69,11 +72,13 @@ def signUp():
 @auth.login_required(role=1)
 def delete(id):
     try:
-        deleting = UserManager.deleteUser(id, user=auth.current_user())
-        if deleting == 400:
-            return jsonify({"message": "No user deleted"})
-        ExecutionManager.deleteUser(user=auth.current_user(), user_deleted=deleting["id"], current_action=4)
-        return deleting
+        deleting = UserManager.deleteUser(id)
+        if deleting[1] == 400:
+            return jsonify(deleting[0]), 400
+        ExecutionManager.queryUser(
+            user=auth.current_user(), user_checked=deleting[0]["id"], current_action=2
+        )
+        return jsonify(deleting[0])
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -88,14 +93,16 @@ def update(id):
                 id=id,
                 email=form.data["email"],
                 password=form.data["password"],
-                priority=form.data["priority"]
+                priority=form.data["priority"],
             )
-            if updating == 400:
-                return jsonify({"message": "No user updated"})
-            elif updating == 401:
-                return jsonify({"message": "No user found"})
-            ExecutionManager.updateUser(user=auth.current_user(), user_updated=updating["id"], current_action=5)
-            return updating
+            if updating[1] == 400:
+                return jsonify(updating[0]), 400
+            ExecutionManager.queryUser(
+                user=auth.current_user(),
+                user_checked=updating[0]["id"],
+                current_action=3,
+            )
+            return jsonify(updating[0])
         else:
             return jsonify({"message": str(form.errors)}), 400
     except Exception as ex:

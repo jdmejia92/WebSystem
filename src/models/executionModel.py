@@ -34,8 +34,8 @@ class ExecutionManager:
                 )
                 result = result.to_JSON()
                 executions.append(result)
-            return executions
-        return 400
+            return executions, 200
+        return {"Message": "No executions found"}, 400
 
     @classmethod
     def getExecution(self, id):
@@ -52,25 +52,11 @@ class ExecutionManager:
             )
             result = result.to_JSON()
             execution.append(result)
-            return execution
-        return 400
+            return execution, 200
+        return {"Message": "No execution found"}, 400
 
     @classmethod
-    def queryUsers(self, user, current_action):
-        query = Execution.query.filter(Execution.id == 1).first()
-        if query:
-            last_check = Execution.query.order_by(Execution.id.desc()).first()
-            new_id = last_check.id + 1
-            new_query = Execution(id=new_id, user_id=user.id, action_id=current_action)
-            db.session.add(new_query)
-            db.session.commit()
-            return {"consult_id": new_id}
-        else:
-            consult = firstQuery(user=user, action=current_action)
-            return consult
-
-    @classmethod
-    def queryUser(self, user, user_check, current_action):
+    def queryUser(self, user, user_checked, current_action):
         query = Execution.query.filter(Execution.id == 1).first()
         if query:
             last_check = Execution.query.order_by(Execution.id.desc()).first()
@@ -79,17 +65,17 @@ class ExecutionManager:
                 id=new_id,
                 user_id=user.id,
                 action_id=current_action,
-                user_id_checked=user_check,
+                user_id_checked=user_checked,
             )
             db.session.add(new_query)
             db.session.commit()
-            return {"consult_number": new_id}
         else:
-            consult = firstQuery(user=user, action=current_action, checked=user_check)
+            consult = firstQuery(user=user, action=current_action, checked=user_checked)
             return consult
 
+    
     @classmethod
-    def addUser(self, user, user_add, current_action):
+    def queryMachine(self, user, machine_id, current_action):
         query = Execution.query.filter(Execution.id == 1).first()
         if query:
             last_check = Execution.query.order_by(Execution.id.desc()).first()
@@ -98,49 +84,10 @@ class ExecutionManager:
                 id=new_id,
                 user_id=user.id,
                 action_id=current_action,
-                user_id_checked=user_add,
+                machine_id=machine_id,
             )
             db.session.add(new_query)
             db.session.commit()
-            return {"consult_number": new_id}
         else:
-            consult = firstQuery(user=user, action=current_action, checked=user_add)
-            return consult
-
-    @classmethod
-    def deleteUser(self, user, user_deleted, current_action):
-        query = Execution.query.filter(Execution.id == 1).first()
-        if query:
-            last_check = Execution.query.order_by(Execution.id.desc()).first()
-            new_id = last_check.id + 1
-            new_query = Execution(
-                id=new_id,
-                user_id=user.id,
-                action_id=current_action,
-                user_id_checked=user_deleted,
-            )
-            db.session.add(new_query)
-            db.session.commit()
-            return {"consult_number": new_id}
-        else:
-            consult = firstQuery(user=user, action=current_action, checked=user_deleted)
-            return consult
-
-    @classmethod
-    def updateUser(self, user, user_updated, current_action):
-        query = Execution.query.filter(Execution.id == 1).first()
-        if query:
-            last_check = Execution.query.order_by(Execution.id.desc()).first()
-            new_id = last_check.id + 1
-            new_query = Execution(
-                id=new_id,
-                user_id=user.id,
-                action_id=current_action,
-                user_id_checked=user_updated,
-            )
-            db.session.add(new_query)
-            db.session.commit()
-            return {"consult_number": new_id}
-        else:
-            consult = firstQuery(user=user, action=current_action, checked=user_updated)
+            consult = firstQuery(user=user, action=current_action, machine=machine_id)
             return consult

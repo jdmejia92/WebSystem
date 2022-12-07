@@ -7,6 +7,7 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     priority = db.Column(db.Integer, db.ForeignKey("priority.id"), nullable=False)
+    created_by = db.Column(db.String(36), nullable=True)
 
 
 class Priority(db.Model):
@@ -16,9 +17,9 @@ class Priority(db.Model):
 
 class Execution(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.String(36), nullable=False)
     user_id_checked = db.Column(db.String(36))
-    machine_id = db.Column(db.String(36), db.ForeignKey("machines.id"))
+    machine_id = db.Column(db.String(36))
     action_id = db.Column(db.Integer(), db.ForeignKey("action.id"))
     datetime = db.Column(db.DateTime(), nullable=False, server_default=func.now())
 
@@ -31,7 +32,7 @@ class Action(db.Model):
 class Machines(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     machine = db.Column(db.String(15), unique=True, nullable=False)
-    created_by = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
+    created_by = db.Column(db.String(36), nullable=False)
 
 
 class Pings(db.Model):
@@ -53,16 +54,18 @@ def create_database():
                 admin = Priority(priority="admin")
                 db.session.add(admin)
                 db.session.add(user)
-                query_all_users = Action(action="Revisó a todos los usuarios")
-                query_one_user = Action(action="Revisó un usuario")
-                add_user = Action(action="Añadió un usuario")
-                delete_user = Action(action="Borro un usuario")
-                update_user = Action(action="Actualizó un usuario")
-                db.session.add(query_all_users)
-                db.session.add(query_one_user)
+                add_user = Action(action="Added an user")
+                delete_user = Action(action="Deleted an user")
+                update_user = Action(action="Updated an user")
+                add_machine = Action(action="Added a machine")
+                delete_machine = Action(action="Deleted a machine")
+                update_machine = Action(action="Updated a machine")
                 db.session.add(add_user)
                 db.session.add(delete_user)
                 db.session.add(update_user)
+                db.session.add(add_machine)
+                db.session.add(delete_machine)
+                db.session.add(update_machine)
                 db.session.commit()
             UserManager.firstUser()
     except Exception as ex:

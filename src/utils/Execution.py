@@ -21,7 +21,7 @@ class ExecutionEditData:
         return {
             "id": self.id,
             "user": self.user_id,
-            "user_checked_id": self.user_checked_id,
+            "user_checked": self.user_checked_id,
             "machine_id": self.machine,
             "action": ExecutionEditData.getAction(self.action_id),
             "datetime": self.datetime,

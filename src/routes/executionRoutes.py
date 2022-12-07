@@ -9,10 +9,10 @@ execution = Blueprint("execution", __name__)
 def getExecutions():
     try:
         result = ExecutionManager.getExecutions()
-        if result == 400:
-            return jsonify({"message": "No se encontraron acciones"}), 400
-        result = UserManager.getUserEmail(execution=result, model="execution")
-        return jsonify(result)
+        if result[1] == 400:
+            return jsonify(result[0]), 400
+        email = UserManager.getUserEmail(execution=result[0], model="execution")
+        return jsonify(email)
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -21,9 +21,9 @@ def getExecutions():
 def getExecution(id):
     try:
         result = ExecutionManager.getExecution(id)
-        if result == 400:
-            return jsonify({"message": "No se encontro la acción"}), 400
-        result = UserManager.getUserEmail(execution=result, model="execution")
-        return jsonify(result)
+        if result[1] == 400:
+            return jsonify(result[0]), 400
+        email = UserManager.getUserEmail(execution=result[0], model="execution")
+        return jsonify(email)
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500

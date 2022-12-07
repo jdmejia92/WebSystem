@@ -14,17 +14,19 @@ class UserManager:
     def getUsers(self):
         results = []
         query = User.query.all()
-        for item in query:
-            result = UserEditData(
-                id=item.id,
-                email=item.email,
-                password=item.password,
-                priority=item.priority,
-            )
-            result = result.all_to_JSON()
-            results.append(result)
-        return results
-
+        if query:
+            for item in query:
+                result = UserEditData(
+                    id=item.id,
+                    email=item.email,
+                    password=item.password,
+                    priority=item.priority,
+                    created_by=item.created_by
+                )
+                result = result.all_to_JSON()
+                results.append(result)
+            return results, 200
+        return {"Message": "No users found"}, 400
 
     @classmethod
     def getUser(self, id):
@@ -36,15 +38,17 @@ class UserManager:
                 email=query.email,
                 password=query.password,
                 priority=query.priority,
+                created_by=query.created_by
             )
             result = result.all_to_JSON()
             results.append(result)
-            return results
+            return results, 200
+        return {"Message": "No user found"}, 400
 
     @classmethod
-    def addUser(self, email=None, password=None, priority="user"):
+    def addUser(self, created_by, email=None, password=None, priority="user"):
         if User.query.filter_by(email=email).first():
-            return 400
+            return {"message": "User already exists"}, 400
         else:
             id = uuid.uuid4()
             if priority == "admin":
@@ -56,19 +60,22 @@ class UserManager:
                 email=email,
                 password=generate_password_hash(password),
                 priority=priority,
+                created_by=created_by.id
             )
             db.session.add(new_user)
             db.session.commit()
-            return {"id": id}
+            return {"id": id}, 200
 
     @classmethod
-    def deleteUser(self, id, user):
+    def deleteUser(self, id):
         query = User.query.filter_by(id=id).scalar()
         if query:
-            db.session.delete(query)
-            db.session.commit()
-            return {"id": query.id}
-        return 400
+            delete = User.query.filter(User.id == id).delete()
+            if delete == 1:
+                db.session.commit()
+                return {"id": query.id}, 200
+            return {"Message": "No user deleted"}, 400
+        return {"Message": "No user found"}, 400
 
     @classmethod
     def updateUser(self, id, email, password, priority):
@@ -78,24 +85,19 @@ class UserManager:
                 priority = str(1)
             else:
                 priority = str(2)
-            result = (
-                db.session.query(User)
-                .filter(User.id == id)
-                .update(
-                    {
-                        "email": email,
-                        "password": generate_password_hash(password),
-                        "priority": priority,
-                    },
-                    synchronize_session="fetch",
-                )
+            result = User.query.filter(User.id == id).update(
+                {
+                    "email": email,
+                    "password": generate_password_hash(password),
+                    "priority": priority,
+                }
             )
             if result == 1:
                 db.session.commit()
-                return {"id": query.id}
+                return {"id": query.id}, 200
             else:
-                return 400
-        return 401
+                return {"message": "No user updated"}, 400
+        return {"Message": "No user found"}, 400
 
     @classmethod
     def login(self, email, password):
@@ -103,7 +105,6 @@ class UserManager:
         if query:
             if check_password_hash(query.password, password):
                 return query
-
 
     @classmethod
     def firstUser(self):
@@ -115,6 +116,7 @@ class UserManager:
                 email="admin@system.com",
                 password=generate_password_hash("123456"),
                 priority=1,
+                created_by="System"
             )
             db.session.add(new_user)
             db.session.commit()
@@ -123,17 +125,22 @@ class UserManager:
     def getUserEmail(self, execution, model):
         if model == "execution":
             for item in execution:
-                id = item["user"]
-                query = User.query.filter_by(id=id).scalar()
-                result = {"user": str(query.email)}
-                item.update(result)
-        elif model == "system":
+                query = User.query.filter_by(id=item["user"]).scalar()
+                if query:
+                    user = {"user": str(query.email)}
+                    item.update(user)
+                query_checked = User.query.filter_by(id=item["user_checked"]).scalar()
+                if query_checked:
+                    user = {"user_checked": str(query_checked.email)}
+                    item.update(user)
+            return execution
+        else:
             for item in execution:
-                id = item["created_by"]
-                query = User.query.filter_by(id=id).scalar()
-                result = {"created_by": str(query.email)}
-                item.update(result)
-        return execution
+                query = User.query.filter_by(id=item["created_by"]).scalar()
+                if query:
+                    result = {"created_by": item["created_by"]} if query == None else {"created_by": str(query.email)}
+                    item.update(result)
+            return execution
 
 
 @auth.verify_password

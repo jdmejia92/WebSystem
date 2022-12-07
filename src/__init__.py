@@ -23,7 +23,7 @@ from src.routes.userRoutes import user as user_blueprint
 app.register_blueprint(user_blueprint, url_prefix="/api/v01/users")
 
 # Blueprint para el sistema
-from src.routes.systemRoutes import system as system_blueprint
+from src.routes.machineRoutes import system as system_blueprint
 
 app.register_blueprint(system_blueprint, url_prefix="/api/v01/system")
 
