@@ -87,6 +87,18 @@ def ping():
         pings = PingsManager.ping()
         if pings[1] == 400:
             return jsonify(pings[0])
+        PingsManager.addPings(pings=pings[0], user=auth.current_user())
+        return jsonify(pings[0])
+    except Exception as ex:
+        return jsonify({"Message": str(ex)})
+
+@system.route("/pings")
+@auth.login_required()
+def pings():
+    try:
+        pings = PingsManager.getPings()
+        if pings[1] == 400:
+            return jsonify(pings[0])
         return jsonify(pings[0])
     except Exception as ex:
         return jsonify({"Message": str(ex)})

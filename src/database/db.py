@@ -39,7 +39,8 @@ class Pings(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     ping = db.Column(db.Float(), nullable=False)
     date = db.Column(db.DateTime(), nullable=False, server_default=func.now())
-    ping_from = db.Column(db.String(36), db.ForeignKey("machines.id"), nullable=False)
+    machine = db.Column(db.String(36), db.ForeignKey("machines.id"), nullable=False)
+    ping_from = db.Column(db.String(36), nullable=False)
 
 
 def create_database():
