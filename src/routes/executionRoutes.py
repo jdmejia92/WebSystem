@@ -11,8 +11,14 @@ def getExecutions():
         result = ExecutionManager.getExecutions()
         if result[1] == 400:
             return jsonify(result[0]), 400
-        email = UserManager.getUserEmail(execution=result[0], model="execution")
-        return jsonify(email)
+        for item in result[0]:
+            email = UserManager.getUserEmail(execution=item, model="execution")
+            if len(email) == 1:
+                item.update({"user": email["user"]})
+            else:
+                item.update({"user": email["user"]})
+                item.update({"user_checked": email["user_checked"]})
+        return jsonify(result[0])
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -23,7 +29,13 @@ def getExecution(id):
         result = ExecutionManager.getExecution(id)
         if result[1] == 400:
             return jsonify(result[0]), 400
-        email = UserManager.getUserEmail(execution=result[0], model="execution")
-        return jsonify(email)
+        for item in result[0]:
+            email = UserManager.getUserEmail(execution=item, model="execution")
+            if len(email) == 1:
+                item.update({"user": email["user"]})
+            else:
+                item.update({"user": email["user"]})
+                item.update({"user_checked": email["user_checked"]})
+        return jsonify(result[0])
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500

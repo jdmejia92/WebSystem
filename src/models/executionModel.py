@@ -9,7 +9,7 @@ def firstQuery(user, action, checked=None, machine=None):
         id=id,
         user_id=user.id,
         action_id=action,
-        user_id_checked=checked,
+        user_id_target=checked,
         machine_id=machine,
     )
     db.session.add(new_query)
@@ -27,7 +27,7 @@ class ExecutionManager:
                 result = ExecutionEditData(
                     id=item.id,
                     user_id=item.user_id,
-                    user_checked_id=item.user_id_checked,
+                    user_id_target=item.user_id_target,
                     machine_id=item.machine_id,
                     action_id=item.action_id,
                     datetime=item.datetime,
@@ -45,7 +45,7 @@ class ExecutionManager:
             result = ExecutionEditData(
                 id=query.id,
                 user_id=query.user_id,
-                user_checked_id=query.user_id_checked,
+                user_id_target=query.user_id_target,
                 machine_id=query.machine_id,
                 action_id=query.action_id,
                 datetime=query.datetime,
@@ -56,7 +56,7 @@ class ExecutionManager:
         return {"Message": "No execution found"}, 400
 
     @classmethod
-    def queryUser(self, user, user_checked, current_action):
+    def queryUser(self, user, user_id_target, current_action):
         query = Execution.query.filter(Execution.id == 1).first()
         if query:
             last_check = Execution.query.order_by(Execution.id.desc()).first()
@@ -65,12 +65,12 @@ class ExecutionManager:
                 id=new_id,
                 user_id=user.id,
                 action_id=current_action,
-                user_id_checked=user_checked,
+                user_id_target=user_id_target,
             )
             db.session.add(new_query)
             db.session.commit()
         else:
-            consult = firstQuery(user=user, action=current_action, checked=user_checked)
+            consult = firstQuery(user=user, action=current_action, checked=user_id_target)
             return consult
 
     

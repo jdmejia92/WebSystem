@@ -30,7 +30,6 @@ class UserManager:
 
     @classmethod
     def getUser(self, id):
-        results = []
         query = User.query.filter_by(id=id).scalar()
         if query:
             result = UserEditData(
@@ -41,8 +40,7 @@ class UserManager:
                 created_by=query.created_by
             )
             result = result.all_to_JSON()
-            results.append(result)
-            return results, 200
+            return result, 200
         return {"Message": "No user found"}, 400
 
     @classmethod
@@ -124,23 +122,28 @@ class UserManager:
     @classmethod
     def getUserEmail(self, execution, model):
         if model == "execution":
-            for item in execution:
-                query = User.query.filter_by(id=item["user"]).scalar()
-                if query:
-                    user = {"user": str(query.email)}
-                    item.update(user)
-                query_checked = User.query.filter_by(id=item["user_checked"]).scalar()
-                if query_checked:
-                    user = {"user_checked": str(query_checked.email)}
-                    item.update(user)
-            return execution
-        else:
-            for item in execution:
-                query = User.query.filter_by(id=item["created_by"]).scalar()
-                if query:
-                    result = {"created_by": item["created_by"]} if query == None else {"created_by": str(query.email)}
-                    item.update(result)
-            return execution
+            executions = {}
+            query = User.query.filter_by(id=execution["user"]).scalar()
+            if query:
+                user = {"user": str(query.email)}
+                executions.update(user)
+            query_checked = User.query.filter_by(id=execution["user_checked"]).scalar()
+            if query_checked:
+                user_checked = {"user_checked": str(query_checked.email)}
+                executions.update(user_checked)
+            return executions
+        elif model == "created_by":
+            if execution["created_by"] == "System":
+                return "System", 200
+            query = User.query.filter_by(id=execution["created_by"]).scalar()
+            if query:
+                return query.email, 200
+            return {"message": "no user found"}, 400
+        elif model == "ping_from":
+            query = User.query.filter_by(id=execution["ping_from"]).scalar()
+            if query:
+                return query.email, 200
+            return {"message": "no user found"}, 400
 
 
 @auth.verify_password

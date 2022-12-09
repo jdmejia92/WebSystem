@@ -17,8 +17,8 @@ class Priority(db.Model):
 
 class Execution(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column(db.String(36), nullable=False)
-    user_id_checked = db.Column(db.String(36))
+    user_id = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
+    user_id_target = db.Column(db.String(36))
     machine_id = db.Column(db.String(36))
     action_id = db.Column(db.Integer(), db.ForeignKey("action.id"))
     datetime = db.Column(db.DateTime(), nullable=False, server_default=func.now())
@@ -32,7 +32,7 @@ class Action(db.Model):
 class Machines(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     machine = db.Column(db.String(15), unique=True, nullable=False)
-    created_by = db.Column(db.String(36), nullable=False)
+    created_by = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
 
 
 class Pings(db.Model):
@@ -40,7 +40,7 @@ class Pings(db.Model):
     ping = db.Column(db.Float(), nullable=False)
     date = db.Column(db.DateTime(), nullable=False, server_default=func.now())
     machine = db.Column(db.String(36), db.ForeignKey("machines.id"), nullable=False)
-    ping_from = db.Column(db.String(36), nullable=False)
+    ping_from = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
 
 
 def create_database():

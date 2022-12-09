@@ -2,6 +2,7 @@ from src.form.form import UserForm
 from src.models.userModel import UserManager, auth
 from src.models.executionModel import ExecutionManager
 from flask import jsonify, request, Blueprint
+from sqlalchemy.exc import IntegrityError
 
 
 user = Blueprint("users", __name__)
@@ -26,8 +27,12 @@ def getUsers():
         users = UserManager.getUsers()
         if users[1] == 400:
             return jsonify(users[0]), 400
-        email = UserManager.getUserEmail(execution=users[0], model="user")
-        return jsonify(email)
+        for user in users[0]:
+            email = UserManager.getUserEmail(execution=user, model="created_by")
+            if email[1] == 400:
+                return jsonify(email[0])
+            user.update({"created_by": str(email[0])})
+        return jsonify(users[0])
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -39,8 +44,11 @@ def getUser(id):
         user = UserManager.getUser(id)
         if user[1] == 400:
             return jsonify(user[0])
-        email = UserManager.getUserEmail(execution=user[0], model="user")
-        return jsonify(email)
+        email = UserManager.getUserEmail(execution=user[0], model="created_by")
+        if email[1] == 400:
+            return jsonify(email[0])
+        user[0].update({"created_by": str(email[0])})
+        return jsonify(user[0])
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
@@ -60,7 +68,7 @@ def signUp():
             if id[1] == 400:
                 return jsonify(id[0]), 400
             ExecutionManager.queryUser(
-                user=auth.current_user(), user_checked=id[0]["id"], current_action=1
+                user=auth.current_user(), user_id_target=id[0]["id"], current_action=1
             )
             return jsonify(id[0])
         return jsonify(form.errors), 400
@@ -76,10 +84,12 @@ def delete(id):
         if deleting[1] == 400:
             return jsonify(deleting[0]), 400
         ExecutionManager.queryUser(
-            user=auth.current_user(), user_checked=deleting[0]["id"], current_action=2
+            user=auth.current_user(), user_id_target=deleting[0]["id"], current_action=2
         )
         return jsonify(deleting[0])
-    except Exception as ex:
+    except IntegrityError or Exception as ex:
+        if IntegrityError:
+            return jsonify({"message": "Can not delete a user who made a execution in the system"})
         return jsonify({"message": str(ex)}), 500
 
 
@@ -99,7 +109,7 @@ def update(id):
                 return jsonify(updating[0]), 400
             ExecutionManager.queryUser(
                 user=auth.current_user(),
-                user_checked=updating[0]["id"],
+                user_id_target=updating[0]["id"],
                 current_action=3,
             )
             return jsonify(updating[0])

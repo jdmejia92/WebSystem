@@ -32,6 +32,10 @@ from src.routes.executionRoutes import execution as exec_blueprint
 
 app.register_blueprint(exec_blueprint, url_prefix="/api/v01/execution")
 
+from src.routes.pingRoutes import pings_route as pings_blueprint
+
+app.register_blueprint(pings_blueprint, url_prefix="/api/v01/ping")
+
 # Crear tabla
 from src.database.db import create_database
 
