@@ -43,12 +43,12 @@ def getUser(id):
     try:
         user = UserManager.getUser(id)
         if user[1] == 400:
-            return jsonify(user[0])
+            return jsonify(user[0]), 400
         email = UserManager.getUserEmail(execution=user[0], model="created_by")
         if email[1] == 400:
-            return jsonify(email[0])
+            return jsonify(email[0]), 400
         user[0].update({"created_by": str(email[0])})
-        return jsonify(user[0])
+        return jsonify(user[0]), 200
     except Exception as ex:
         return jsonify({"message": str(ex)}), 500
 
